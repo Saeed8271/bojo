@@ -338,6 +338,7 @@
             <p class="mb-0">${error.message}</p>
         </div>`;
 });
+    }
 
     // ---- Delete Job ----
     window.promptDeleteJob = function (jobId) {
