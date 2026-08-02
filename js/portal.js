@@ -328,16 +328,16 @@
 
             jobsManageContainer.innerHTML = html;
         }, function (error) {
-    console.error("FIRESTORE ERROR:");
-    console.error(error);
-    console.error(error.code);
-    console.error(error.message);
+            console.error("FIRESTORE ERROR:");
+            console.error(error);
+            console.error(error.code);
+            console.error(error.message);
 
-    jobsManageContainer.innerHTML =
-        `<div class="col-12 portal-empty-state">
-            <p class="mb-0">${error.message}</p>
-        </div>`;
-});
+            jobsManageContainer.innerHTML = `
+                <div class="col-12 portal-empty-state">
+                    <p class="mb-0">${error.message}</p>
+                </div>`;
+        });
     }
 
     // ---- Delete Job ----
