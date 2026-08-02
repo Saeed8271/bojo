@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Portal | S S Enterprises</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Portal Custom CSS -->
+    <link rel="stylesheet" href="../css/portal.css">
+</head>
+<body class="portal-body">
+
+    <!-- Auth Check Overlay (shown until Firebase confirms auth state) -->
+    <div id="authCheckOverlay" class="portal-loading-overlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status"></div>
+            <p class="mt-3 text-muted">Checking session...</p>
+        </div>
+    </div>
+
+    <!-- ================= LOGIN SCREEN ================= -->
+    <div id="loginScreen" class="d-none d-flex align-items-center justify-content-center p-3">
+        <div class="card login-card shadow-lg border-0 p-4 fade-in">
+            <div class="card-body text-center">
+                <img src="../images/logo_1.jpg" alt="S S Enterprises" class="rounded-circle login-logo mb-3 shadow-sm">
+                <h4 class="fw-bold text-navy mb-1">Staff Portal</h4>
+                <p class="text-muted small mb-4">Sign in with your staff credentials</p>
+
+                <div id="loginError" class="alert alert-danger py-2 small d-none" role="alert"></div>
+
+                <form id="loginForm" class="text-start">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Email Address</label>
+                        <input type="email" class="form-control" id="loginEmail" placeholder="staff@ssenterprises.com" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold" id="loginBtn">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD SCREEN ================= -->
+    <div id="dashboardScreen" class="d-none">
+
+        <!-- Topbar -->
+        <nav class="portal-topbar py-3">
+            <div class="container d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="../images/logo_1.jpg" alt="S S Enterprises" class="rounded-circle portal-brand-icon me-2 shadow-sm">
+                    <div>
+                        <span class="fw-bold text-navy d-block lh-1">S S ENTERPRISES</span>
+                        <small class="text-muted" style="font-size: 0.75rem;">STAFF PORTAL</small>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger rounded-pill px-3" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+            </div>
+        </nav>
+
+        <div class="container py-4 py-md-5">
+            <!-- Welcome + Actions -->
+            <div class="mb-4 fade-in">
+                <h3 class="fw-bold text-navy mb-1">Welcome Staff 👋</h3>
+                <p class="text-muted">Manage job posters from your dashboard below.</p>
+            </div>
+
+            <div class="row g-3 mb-5">
+                <div class="col-md-6">
+                    <div class="card dashboard-action-card shadow-sm p-4 h-100" id="uploadNewJobBtn">
+                        <div class="d-flex align-items-center">
+                            <div class="dashboard-icon-circle me-3">
+                                <i class="fas fa-cloud-upload-alt fa-lg"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Upload New Job</h5>
+                                <p class="text-muted small mb-0">Add a new job poster to the website</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card dashboard-action-card shadow-sm p-4 h-100" id="manageJobsBtn">
+                        <div class="d-flex align-items-center">
+                            <div class="dashboard-icon-circle me-3">
+                                <i class="fas fa-tasks fa-lg"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Manage Jobs</h5>
+                                <p class="text-muted small mb-0">Replace or delete existing job posters</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Management Grid -->
+            <h5 class="fw-bold text-navy mb-3"><i class="fas fa-briefcase text-primary me-2"></i>Posted Jobs</h5>
+            <div id="jobsManageContainer" class="row g-3"></div>
+        </div>
+    </div>
+
+    <!-- ================= UPLOAD / REPLACE JOB MODAL ================= -->
+    <div class="modal fade" id="uploadJobModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="uploadModalTitle">Upload New Job</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="jobForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editingJobId">
+                        <input type="hidden" id="editingCreatedAt">
+
+                        <label class="form-label small fw-semibold">Job Poster Image</label>
+                        <div class="drop-zone mb-3" id="dropZone">
+                            <div id="dropZoneContent">
+                                <i class="fas fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
+                                <p class="mb-1 fw-semibold">Drag & drop image here</p>
+                                <p class="text-muted small mb-0">or click to browse (JPG, JPEG, PNG, WEBP — max 5MB)</p>
+                            </div>
+                            <img id="previewImg" class="preview-img d-none" alt="Preview">
+                        </div>
+                        <input type="file" id="jobFileInput" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="d-none">
+
+                        <label class="form-label small fw-semibold">Posted Date</label>
+                        <input type="date" class="form-control" id="postedDateInput" required>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4" id="saveJobBtn">
+                            <span class="spinner-border spinner-border-sm me-2 d-none" id="saveJobSpinner"></span>
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DELETE CONFIRMATION MODAL ================= -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-body text-center p-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h5 class="fw-bold mb-2">Delete this job?</h5>
+                    <p class="text-muted mb-0">This action cannot be undone. The job listing will be permanently removed.</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TOAST CONTAINER ================= -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3 portal-toast-container" id="portalToastContainer"></div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <!-- Firebase / Cloudinary Config -->
+    <script src="../js/firebase-config.js"></script>
+    <!-- Portal Logic -->
+    <script src="../js/portal.js"></script>
+</body>
+</html>
