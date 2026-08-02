@@ -22,7 +22,7 @@ const db = firebase.firestore();
    Cloudinary
 ========================== */
 
-const CLOUDINARY_CLOUD_NAME = "YOUR_CLOUDINARY_NAME";
+const CLOUDINARY_CLOUD_NAME = "cnuzoh5i";
 const CLOUDINARY_UPLOAD_PRESET = "ss_latest_jobs";
 
 const CLOUDINARY_UPLOAD_URL =
