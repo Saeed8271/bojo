@@ -6,12 +6,12 @@
 
 // ---- Firebase Config (Authentication + Firestore) ----
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDHXwjSGZaj3yFKa3ovQ3vlAWV8Sr646E8",
+  authDomain: "ss-enterprises-website.firebaseapp.com",
+  projectId: "ss-enterprises-website",
+  storageBucket: "ss-enterprises-website.firebasestorage.app",
+  messagingSenderId: "842630846766",
+  appId: "1:842630846766:web:f133d594d9be0c1313c2bf"
 };
 
 // Initialize Firebase (compat SDK)
