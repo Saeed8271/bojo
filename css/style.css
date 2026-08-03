@@ -25,26 +25,19 @@ body {
     letter-spacing: 1px;
 }
 /* Hero Elements styling */
-/* Previously forced min-height: 80vh, which — combined with the section's
-   own d-flex align-items-center — vertically centered the (shorter) content
-   inside an oversized box, leaving a large empty gap below it before the
-   next section. Height now simply follows the content, with padding only. */
+/* No forced min-height — section sizes to its content. Padding kept tight
+   to match the compact reference spacing (nav -> badge -> next section). */
 .hero-section {
-    padding: 70px 0;
+    padding: 35px 0 45px;
 }
-
-/* On stacked layouts (below lg), Bootstrap's align-items-center on the hero
-   row still vertically centers the shorter text column against the taller
-   image-card column. Top-align both there instead. */
 @media (max-width: 991.98px) {
     .hero-section {
-        padding: 50px 0 60px;
+        padding: 25px 0 35px;
     }
     .hero-section .row.align-items-center {
         align-items: flex-start !important;
     }
 }
-
 .bg-shape {
     position: absolute;
     width: 300px;
