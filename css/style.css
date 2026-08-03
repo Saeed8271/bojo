@@ -25,10 +25,26 @@ body {
     letter-spacing: 1px;
 }
 /* Hero Elements styling */
+/* Previously forced min-height: 80vh, which — combined with the section's
+   own d-flex align-items-center — vertically centered the (shorter) content
+   inside an oversized box, leaving a large empty gap below it before the
+   next section. Height now simply follows the content, with padding only. */
 .hero-section {
-    min-height: 80vh;
-    padding: 80px 0;
+    padding: 70px 0;
 }
+
+/* On stacked layouts (below lg), Bootstrap's align-items-center on the hero
+   row still vertically centers the shorter text column against the taller
+   image-card column. Top-align both there instead. */
+@media (max-width: 991.98px) {
+    .hero-section {
+        padding: 50px 0 60px;
+    }
+    .hero-section .row.align-items-center {
+        align-items: flex-start !important;
+    }
+}
+
 .bg-shape {
     position: absolute;
     width: 300px;
@@ -38,21 +54,6 @@ body {
     right: -50px;
     z-index: 1;
 }
-
-/* Fix: on stacked layouts (below lg), Bootstrap's align-items-center on the
-   hero row vertically centers the shorter text column against the taller
-   image-card column, creating a large empty gap above the badge. Below lg,
-   align both columns to the top instead and let height follow content. */
-@media (max-width: 991.98px) {
-    .hero-section {
-        min-height: auto;
-        padding: 50px 0 60px;
-    }
-    .hero-section .row.align-items-center {
-        align-items: flex-start !important;
-    }
-}
-
 /* Services and cards formatting */
 .service-card:hover {
     transform: translateY(-5px);
