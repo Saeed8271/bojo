@@ -6,36 +6,29 @@
     --dark-bg: #112240;
     --text-muted-light: #a8b2d1;
 }
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #333333;
     scroll-behavior: smooth;
 }
-
 .text-navy {
     color: var(--navy-color);
 }
-
 .bg-primary-light {
     background-color: var(--primary-light);
 }
-
 .text-light-muted {
     color: var(--text-muted-light);
 }
-
 /* Custom Text Utilities */
 .tracking-wider {
     letter-spacing: 1px;
 }
-
 /* Hero Elements styling */
 .hero-section {
     min-height: 80vh;
     padding: 80px 0;
 }
-
 .bg-shape {
     position: absolute;
     width: 300px;
@@ -46,21 +39,32 @@ body {
     z-index: 1;
 }
 
+/* Fix: on stacked layouts (below lg), Bootstrap's align-items-center on the
+   hero row vertically centers the shorter text column against the taller
+   image-card column, creating a large empty gap above the badge. Below lg,
+   align both columns to the top instead and let height follow content. */
+@media (max-width: 991.98px) {
+    .hero-section {
+        min-height: auto;
+        padding: 50px 0 60px;
+    }
+    .hero-section .row.align-items-center {
+        align-items: flex-start !important;
+    }
+}
+
 /* Services and cards formatting */
 .service-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
 }
-
 .transition-all {
     transition: all 0.3s ease-in-out;
 }
-
 /* Gallery Infrastructure Smooth Zoom Interaction */
 .card:hover .transition-transform {
     transform: scale(1.06);
 }
-
 /* Floating Actions Buttons container styling */
 .floating-btn-group {
     position: fixed;
@@ -72,7 +76,6 @@ body {
     align-items: flex-end;
     width: 60px; /* Constraints the container so it cannot stretch wide */
 }
-
 .floating-btn {
     width: 55px !important;
     height: 55px !important;
@@ -85,23 +88,19 @@ body {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     text-decoration: none;
 }
-
 .floating-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3) !important;
 }
-
 /* Align and center icon glyphs inside the fixed button dimensions */
 .floating-btn i {
     margin: 0;
     padding: 0;
     line-height: 1;
 }
-
 #backToTop {
     display: none; /* Controlled via script.js */
 }
-
 /* Footer alterations */
 .footer-links a:hover {
     color: #ffffff !important;
