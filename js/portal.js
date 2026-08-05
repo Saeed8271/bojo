@@ -3,7 +3,8 @@
    S S Enterprises - Admin / Staff Portal
    Handles: Firebase Auth guard, Login/Logout, Cloudinary unsigned upload,
    Firestore CRUD for "jobs" collection, drag & drop, validation, toasts,
-   loading spinners, and delete confirmation modal.
+   loading spinners, delete confirmation modal, and client-side image
+   compression (browser-image-compression) before every upload.
    ========================================================================== */
 
 (function () {
@@ -33,6 +34,8 @@
     const dropZoneContent = document.getElementById('dropZoneContent');
     const previewImg = document.getElementById('previewImg');
     const postedDateInput = document.getElementById('postedDateInput');
+    const companyNameInput = document.getElementById('companyNameInput');
+    const locationInput = document.getElementById('locationInput');
     const saveJobBtn = document.getElementById('saveJobBtn');
     const saveJobSpinner = document.getElementById('saveJobSpinner');
     const editingJobIdInput = document.getElementById('editingJobId');
@@ -46,6 +49,17 @@
 
     const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
+    // Original drop-zone placeholder markup, saved so we can restore it after
+    // showing a "Compressing..." state or on error.
+    const dropZoneDefaultHTML = dropZoneContent ? dropZoneContent.innerHTML : '';
+
+    const COMPRESSION_OPTIONS = {
+        maxSizeMB: 0.35,
+        maxWidthOrHeight: 1200,
+        useWebWorker: true,
+        initialQuality: 0.8
+    };
 
     let selectedFile = null;
     let jobIdPendingDelete = null;
@@ -132,16 +146,21 @@
         jobForm.reset();
         selectedFile = null;
         previewImg.classList.add('d-none');
+        if (dropZoneContent) dropZoneContent.innerHTML = dropZoneDefaultHTML;
         dropZoneContent.classList.remove('d-none');
         editingJobIdInput.value = '';
         editingCreatedAtInput.value = '';
         postedDateInput.value = new Date().toISOString().split('T')[0];
+        companyNameInput.value = '';
+        locationInput.value = '';
 
         if (isReplace && jobData) {
             uploadModalTitle.textContent = 'Replace Job Poster';
             editingJobIdInput.value = jobData.id;
             editingCreatedAtInput.value = jobData.createdAt ? JSON.stringify(jobData.createdAt) : '';
             postedDateInput.value = jobData.postedDate || postedDateInput.value;
+            companyNameInput.value = jobData.companyName || '';
+            locationInput.value = jobData.location || '';
             previewImg.src = jobData.imageUrl;
             previewImg.classList.remove('d-none');
             dropZoneContent.classList.add('d-none');
@@ -152,8 +171,14 @@
         uploadModal.show();
     }
 
-    window.openReplaceModal = function (jobId, imageUrl, postedDate) {
-        openUploadModal(true, { id: jobId, imageUrl: imageUrl, postedDate: postedDate });
+    window.openReplaceModal = function (jobId, imageUrl, postedDate, companyName, location) {
+        openUploadModal(true, {
+            id: jobId,
+            imageUrl: imageUrl,
+            postedDate: postedDate,
+            companyName: companyName,
+            location: location
+        });
     };
 
     // ---- Drag & Drop + Click to Upload ----
@@ -188,6 +213,17 @@
         });
     }
 
+    // ---- Compress Image (browser-image-compression) ----
+    function compressImage(file) {
+        if (typeof imageCompression !== 'function') {
+            // Library failed to load - fall back to the original file rather
+            // than blocking the upload entirely.
+            console.error('browser-image-compression library not found; uploading original file.');
+            return Promise.resolve(file);
+        }
+        return imageCompression(file, COMPRESSION_OPTIONS);
+    }
+
     function handleFileSelect(file) {
         if (!ALLOWED_TYPES.includes(file.type)) {
             showToast('Only JPG, JPEG, PNG, and WEBP images are allowed.', 'danger');
@@ -198,14 +234,30 @@
             return;
         }
 
-        selectedFile = file;
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            previewImg.src = e.target.result;
-            previewImg.classList.remove('d-none');
-            dropZoneContent.classList.add('d-none');
-        };
-        reader.readAsDataURL(file);
+        // Show a lightweight "compressing" placeholder while we process it.
+        previewImg.classList.add('d-none');
+        dropZoneContent.classList.remove('d-none');
+        dropZoneContent.innerHTML = `
+            <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+            <p class="mb-0 small text-muted">Compressing image...</p>`;
+
+        compressImage(file).then(function (compressedFile) {
+            selectedFile = compressedFile;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewImg.classList.remove('d-none');
+                dropZoneContent.classList.add('d-none');
+            };
+            reader.readAsDataURL(compressedFile);
+        }).catch(function (error) {
+            console.error('Image compression failed:', error);
+            showToast('Failed to process the image. Please try another file.', 'danger');
+            selectedFile = null;
+            dropZoneContent.innerHTML = dropZoneDefaultHTML;
+            dropZoneContent.classList.remove('d-none');
+            previewImg.classList.add('d-none');
+        });
     }
 
     // ---- Cloudinary Upload ----
@@ -230,7 +282,17 @@
 
             const editingJobId = editingJobIdInput.value;
             const postedDate = postedDateInput.value;
+            const companyName = companyNameInput ? companyNameInput.value.trim() : '';
+            const location = locationInput ? locationInput.value.trim() : '';
 
+            if (!companyName) {
+                showToast('Please enter the company name.', 'danger');
+                return;
+            }
+            if (!location) {
+                showToast('Please enter the location.', 'danger');
+                return;
+            }
             if (!postedDate) {
                 showToast('Please select a posted date.', 'danger');
                 return;
@@ -243,6 +305,8 @@
             saveJobBtn.disabled = true;
             saveJobSpinner.classList.remove('d-none');
 
+            // selectedFile is already the compressed version (set in
+            // handleFileSelect), so this uploads the compressed image only.
             const proceed = selectedFile
                 ? uploadToCloudinary(selectedFile)
                 : Promise.resolve(null);
@@ -250,7 +314,11 @@
             proceed.then(function (cloudinaryResult) {
                 if (editingJobId) {
                     // Replace existing job
-                    const updateData = { postedDate: postedDate };
+                    const updateData = {
+                        companyName: companyName,
+                        location: location,
+                        postedDate: postedDate
+                    };
                     if (cloudinaryResult) {
                         updateData.imageUrl = cloudinaryResult.secure_url;
                         updateData.publicId = cloudinaryResult.public_id;
@@ -261,6 +329,8 @@
                 } else {
                     // Create new job
                     return db.collection('jobs').add({
+                        companyName: companyName,
+                        location: location,
                         imageUrl: cloudinaryResult.secure_url,
                         publicId: cloudinaryResult.public_id,
                         postedDate: postedDate,
@@ -305,6 +375,10 @@
                     ? job.imageUrl.replace('/upload/', '/upload/f_auto,q_auto,w_200/')
                     : job.imageUrl;
 
+                const companyNameDisplay = job.companyName || 'Not specified';
+                const locationDisplay = job.location || 'Not specified';
+                const postedDateDisplay = job.postedDate || 'Not specified';
+
                 html += `
                     <div class="col-sm-6 col-lg-4 col-xl-3 fade-in">
                         <div class="job-manage-card h-100">
@@ -312,9 +386,11 @@
                                 <img src="${thumb}" alt="Job Poster Thumbnail" loading="lazy">
                             </div>
                             <div class="p-3">
-                                <p class="text-muted small mb-2"><i class="fas fa-calendar-alt text-primary me-2"></i>${job.postedDate || 'N/A'}</p>
+                                <p class="text-dark small fw-semibold mb-1">🏢 ${companyNameDisplay}</p>
+                                <p class="text-muted small mb-1">📍 ${locationDisplay}</p>
+                                <p class="text-muted small mb-2">📅 ${postedDateDisplay}</p>
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-primary flex-fill" onclick='openReplaceModal("${doc.id}", ${JSON.stringify(job.imageUrl)}, ${JSON.stringify(job.postedDate || '')})'>
+                                    <button class="btn btn-sm btn-outline-primary flex-fill" onclick='openReplaceModal("${doc.id}", ${JSON.stringify(job.imageUrl)}, ${JSON.stringify(job.postedDate || '')}, ${JSON.stringify(job.companyName || '')}, ${JSON.stringify(job.location || '')})'>
                                         <i class="fas fa-sync-alt me-1"></i>Replace
                                     </button>
                                     <button class="btn btn-sm btn-outline-danger flex-fill" onclick="promptDeleteJob('${doc.id}')">
