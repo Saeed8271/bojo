@@ -269,8 +269,40 @@
                         <input type="hidden" id="editingJobId">
                         <input type="hidden" id="editingCreatedAt">
 
+                        <label for="companyNameInput" class="form-label small fw-semibold">
+                            Company Name *
+                        </label>
+
+                        <input
+                            id="companyNameInput"
+                            type="text"
+                            class="form-control mb-3"
+                            placeholder="Example: S S Enterprises"
+                            required>
+
+                        <label for="locationInput" class="form-label small fw-semibold">
+                            Location *
+                        </label>
+
+                        <input
+                            id="locationInput"
+                            type="text"
+                            class="form-control mb-3"
+                            placeholder="Example: Patna, Bihar"
+                            required>
+
+                        <label for="postedDateInput" class="form-label small fw-semibold">
+                            Posted Date *
+                        </label>
+
+                        <input
+                            id="postedDateInput"
+                            type="date"
+                            class="form-control mb-3"
+                            required>
+
                         <label class="form-label small fw-semibold">
-                            Job Poster
+                            Poster Image *
                         </label>
 
                         <div id="dropZone" class="drop-zone mb-3">
@@ -301,16 +333,6 @@
                             type="file"
                             class="d-none"
                             accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
-
-                        <label class="form-label small fw-semibold">
-                            Posted Date
-                        </label>
-
-                        <input
-                            id="postedDateInput"
-                            type="date"
-                            class="form-control"
-                            required>
 
                     </div>
 
@@ -416,6 +438,9 @@
 
     <!-- Firebase Configuration -->
     <script src="../js/firebase-config.js" defer></script>
+
+    <!-- Browser Image Compression (must load before portal.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js" defer></script>
 
     <!-- Portal Logic -->
     <script src="../js/portal.js" defer></script>
