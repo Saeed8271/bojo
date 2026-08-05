@@ -44,6 +44,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const fullImg = cloudinaryTransform(job.imageUrl, 'f_auto,q_auto,w_1600');
             const posted = job.postedDate ? formatDate(job.postedDate) : '';
 
+            const companyNameDisplay = job.companyName || 'Not specified';
+            const locationDisplay = job.location || 'Not specified';
+            const postedDateDisplay = posted || 'Not specified';
+
             html += `
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 border-0 shadow-sm overflow-hidden rounded-3">
@@ -51,7 +55,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             <img src="${cardImg}" alt="Job Poster" loading="lazy" class="w-100 h-100 object-fit-cover transition-transform" style="transition: transform 0.3s ease;">
                         </div>
                         <div class="card-body p-3 bg-white border-top text-center">
-                            <p class="text-muted small mb-0"><i class="fas fa-calendar-alt text-primary me-2"></i>Posted: ${posted}</p>
+                            <p class="text-dark small fw-semibold mb-1">🏢 ${companyNameDisplay}</p>
+                            <p class="text-muted small mb-1">📍 ${locationDisplay}</p>
+                            <p class="text-muted small mb-0">📅 ${postedDateDisplay}</p>
                         </div>
                     </div>
                 </div>`;
