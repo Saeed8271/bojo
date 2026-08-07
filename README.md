@@ -8,7 +8,7 @@ The website includes a professional landing page along with a secure **Staff Adm
 
 ## 🌐 Live Demo
 
-🔗 https://https://saeed8271.github.io/bojo/
+🔗 https://saeed8271.github.io/bojo/
 
 ---
 
